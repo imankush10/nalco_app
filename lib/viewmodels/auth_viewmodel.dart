@@ -8,12 +8,47 @@ class AuthViewModel extends ChangeNotifier {
   String? error;
   User? currentUser;
 
-  Future<bool> register(String email, String password) async {
+  Future<bool> sendOtpForRegistration(String email) async {
     isLoading = true;
     error = null;
     notifyListeners();
 
     try {
+      final success = await _authService.sendOtp(email);
+      isLoading = false;
+      if (!success) {
+        error = 'Failed to send OTP';
+      }
+      notifyListeners();
+      return success;
+    } catch (e) {
+      isLoading = false;
+      error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> resendOtp(String email) async {
+    error = null;
+    notifyListeners();
+    return await _authService.sendOtp(email);
+  }
+
+  Future<bool> verifyOtpAndRegister(String email, String password, String otp) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      final isOtpValid = await _authService.verifyOtp(email, otp);
+      if (!isOtpValid) {
+        isLoading = false;
+        error = 'Invalid OTP';
+        notifyListeners();
+        return false;
+      }
+
       final user = await _authService.register(email, password);
       isLoading = false;
       if (user != null) {

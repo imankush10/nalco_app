@@ -13,14 +13,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to appropriate screen after 3 seconds
     Timer(Duration(seconds: 3), () => _checkFirstTime());
   }
 
   void _checkFirstTime() async {
     final prefs = await SharedPreferences.getInstance();
     final hasUsers = prefs.getStringList('users')?.isNotEmpty ?? false;
-    
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -32,42 +31,71 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+        body: SafeArea(
+      child: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withOpacity(0.5),
-            ],
-          ),
-        ),
+        color: Colors.grey[100],
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // You can add your logo here
-            Icon(
-              Icons.business,  // Replace with your app icon
-              size: 100,
-              color: Colors.white,
+            SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'lib/assets/nalco.png',
+                  height: 40,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'नाल्को',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 24),
-            Text(
-              'NLC Employee App',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'lib/assets/aluminum.jpg',
+                      height: 400,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Quality Control - Aluminium',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      'Wire Rod',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 16),
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ],
         ),
       ),
-    );
+    ));
   }
 }
