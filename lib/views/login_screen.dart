@@ -119,6 +119,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: viewModel.isLoading
                                 ? null
                                 : () async {
+                                    if (!_isRobotChecked) {
+                                      // Show a warning that the checkbox must be selected
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Please verify that you are not a robot'),
+                                          backgroundColor: Color(0xFFB71C1C),
+                                        ),
+                                      );
+                                      return; // Prevent further execution
+                                    }
                                     final success = await viewModel.login(
                                       _employeeIdController.text,
                                       _passwordController.text,
