@@ -35,7 +35,7 @@ class AuthService {
       otps.add(jsonEncode(otpData));
       await prefs.setStringList(OTP_KEY, otps);
 
-      final smtpServer = gmail('imankush1010@gmail.com', 'anpi bbeo ihcm kqcv');
+      final smtpServer = gmail('imankush1010@gmail.com', '');
       final message = Message()
         ..from = Address('imankush1010@gmail.com', 'NALCO Registration')
         ..recipients.add(email)
