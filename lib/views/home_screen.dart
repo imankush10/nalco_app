@@ -1,7 +1,66 @@
 import 'package:flutter/material.dart';
-import 'results_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'predict_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String username = '';
+  int _selectedIndex = 0;
+  bool _isNavigating = false;  // Add this flag to track actual navigation
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    final employeeId = prefs.getString('employeeId') ?? '';
+    final users = prefs.getStringList('users') ?? [];
+    
+    for (String userStr in users) {
+      final user = jsonDecode(userStr);
+      if (user['employeeId'] == employeeId) {
+        setState(() {
+          username = user['email'].split('@')[0];
+        });
+        break;
+      }
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Add a small delay to show the highlight before navigation
+    if (index == 1) {
+      _isNavigating = true;
+      Future.delayed(Duration(milliseconds: 150), () {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PredictScreen()),
+        ).then((_) {
+          if (!mounted) return;
+          setState(() {
+            _selectedIndex = 0;
+            _isNavigating = false;
+          });
+        });
+      });
+    }
+    // For Control and Tinker, we'll just show the highlight
+    // Later you can add navigation logic similar to Predict
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,53 +101,26 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            // Input Fields
+            // Welcome Message
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(16),
+              child: Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Enter Parameters',
+                      'Welcome',
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFB71C1C),
+                        fontSize: 24,
+                        color: Colors.grey[800],
                       ),
                     ),
-                    SizedBox(height: 20),
-                    _buildInputField('Chemical Composition (%)'),
-                    _buildInputField('Casting Temperature (°C)'),
-                    _buildInputField('Cooling Water Temperature (°C)'),
-                    _buildInputField('Casting Speed (m/min)'),
-                    _buildInputField('Cast Bar Entry Temperature (°C)'),
-                    _buildInputField('Emulsion Temperature (°C)'),
-                    _buildInputField('Emulsion Pressure (bar)'),
-                    _buildInputField('Emulsion Concentration (%)'),
-                    _buildInputField('Rod Quench Water Pressure (bar)'),
-                    SizedBox(height: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ResultsScreen(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFB71C1C),
-                          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: Text(
-                          'Predict',
-                          style: TextStyle(fontSize: 18),
-                        ),
+                    SizedBox(height: 8),
+                    Text(
+                      username,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFB71C1C),
                       ),
                     ),
                   ],
@@ -107,10 +139,10 @@ class HomeScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildNavItem('Home', Icons.home, true),
-                    _buildNavItem('Predict', Icons.analytics, false),
-                    _buildNavItem('Control', Icons.settings, false),
-                    _buildNavItem('Tinker', Icons.build, false),
+                    _buildNavItem('Home', Icons.home, _selectedIndex == 0),
+                    _buildNavItem('Predict', Icons.analytics, _selectedIndex == 1),
+                    _buildNavItem('Control', Icons.settings, _selectedIndex == 2),
+                    _buildNavItem('Tinker', Icons.build, _selectedIndex == 3),
                   ],
                 ),
               ),
@@ -121,39 +153,25 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInputField(String label) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16),
-      child: TextField(
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-        ),
-        keyboardType: TextInputType.number,
-      ),
-    );
-  }
-
   Widget _buildNavItem(String label, IconData icon, bool isSelected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? Colors.white : Colors.white70,
-        ),
-        Text(
-          label,
-          style: TextStyle(
+    return GestureDetector(
+      onTap: () => _onItemTapped(['Home', 'Predict', 'Control', 'Tinker'].indexOf(label)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
             color: isSelected ? Colors.white : Colors.white70,
-            fontSize: 12,
           ),
-        ),
-      ],
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.white70,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
